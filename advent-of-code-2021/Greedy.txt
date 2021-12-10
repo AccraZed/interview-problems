@@ -1,0 +1,46 @@
+Greedy
+ - Continuous Knapsack
+ - Scheduling problem
+ - NES multiplication shit
+ - Coin Change (under right denominations circumstances)
+ - Dijkstra's Alg
+ - Primm's Algorithm
+ - Kruskal's Algorithm
+ - Huffman coding
+Backtracking
+ - Farmer Fox Goose Bag of Beans
+ - Missionaries and Cannibals
+ - N Queens
+ - Pathogen
+ - Maze Runner
+Divide and Conquer
+ - Skyline Problem
+ - Coin Swipe
+ - Mergesort
+ - QuickSort
+ - Radix
+ - Tromino Tiling
+ - Binary Search
+DP
+ - 0/1 Knapsack
+ - Coin Change
+ - Unique BSTs
+ - Run Like Hell
+ - Matrix Chain multiplication
+ - F-W Alg
+ - Fib
+ - Bino Coeffs
+ - Longest Common Subseq
+
+ Radix Sort
+  Space: O(n + d) // n: num elements, d: current radix
+  Time: O(n*k) // n: num element, k: num digits in largest number | ceil(log_d(biggest number))
+ Merge Sort
+  Space: O(n) // n: num elements
+  Time: O(n*logn) // n: num elements
+ Bucket/Counting Sort
+  Space: O(r) // r: biggest - smallest
+  Time: O(r+n) // r: range, n: range
+ Quick Sort
+  Space: O(logn) - worst: O(n)
+  Time: O(n*logn) - worst: O(n^2);
