@@ -37,6 +37,7 @@ func day3part1(input []uint64, bitlen int) uint64 {
 
 	for pos := 0; pos < bitlen; pos++ {
 		switch mostFreq(input, pos, bitlen) {
+		}
 	}
 
 	var gamma uint64 = 0
