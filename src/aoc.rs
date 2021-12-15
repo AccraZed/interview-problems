@@ -5,9 +5,9 @@ pub mod day5;
 pub mod day6;
 pub mod day7;
 pub mod day8;
+pub mod day9;
 
 pub fn run_aoc() -> Result<(), Box<dyn Error>> {
-    day8::part_1()?;
-    
+    day9::part_2()?;
     Ok(())
 }
