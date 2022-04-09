@@ -7,16 +7,6 @@ pub fn part_1() -> Result<(), Box<dyn Error>> {
     let mut count = 0;
     for line in lines {
         let mut data = line.split(" | ");
-        let legend = data
-            .next()
-            .unwrap()
-            .split(' ')
-            .map(|digit| {
-                let mut chars = digit.chars().collect::<Vec<char>>();
-                chars.sort();
-                return String::from_iter(chars);
-            })
-            .collect::<Vec<String>>();
         let output = data.next().unwrap().split(' ').collect::<Vec<&str>>();
 
         for digit in output {

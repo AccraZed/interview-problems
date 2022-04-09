@@ -1,12 +1,13 @@
 package main
 
 import (
-	advent2021 "lc/advent-of-code-2021"
+	// advent2021 "lc/advent-of-code-2021"
 	// "lc/lc"
 	// "lc/graphs"
 	// "lc/binary"
+	"lc/concurrency"
 )
 
 func main() {
-	advent2021.Day3()
+	concurrency.SiteMain()
 }
