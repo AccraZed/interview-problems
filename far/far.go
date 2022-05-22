@@ -8,17 +8,23 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 )
 
-const CLASS_CHANGE_URL = "https://qwerasd205.github.io/DiscordClassChanges/differences.csv"
-const TARGET_URL = "/mnt/f/Documents/BetterDiscord/YoRHA-UI-BetterDiscord/src"
+const (
+	ClassChangeURL = "https://qwerasd205.github.io/DiscordClassChanges/differences.csv"
+	TargetURL      = "/mnt/f/Documents/BetterDiscord/YoRHA-UI-BetterDiscord/src"
+	TmpFilename    = "replace.txt"
+)
 
 func main() {
-	downloadFile("replace.txt", CLASS_CHANGE_URL)
+	if err := downloadFile(TmpFilename, ClassChangeURL); err != nil {
+		os.Remove(TmpFilename)
+		panic(err)
+	}
 
-	f, err := os.Open("replace.txt")
+	f, err := os.Open(TmpFilename)
 	if err != nil {
+		os.Remove(TmpFilename)
 		panic(err)
 	}
 	defer f.Close()
@@ -29,6 +35,7 @@ func main() {
 	for s.Scan() {
 		names := strings.Split(s.Text(), ",")
 
+		// Set all names in comma list to last name (newest)
 		for i, name := range names {
 			if i == len(names)-1 {
 				continue
@@ -37,8 +44,9 @@ func main() {
 		}
 	}
 
-	target := TARGET_URL
-	filepath.Walk(target, func(path string, info os.FileInfo, err error) error {
+	errChan := make(chan error)
+	fileCount := 0
+	filepath.Walk(TargetURL, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -47,19 +55,28 @@ func main() {
 			return nil
 		}
 
-		go FindAndReplace(path, legend)
+		fileCount++
+		go FindAndReplace(path, legend, errChan)
 		return nil
 	})
 
-	fmt.Println("Sleeping...")
-	time.Sleep(30 * time.Minute)
+	for i := 0; i < fileCount; i++ {
+		err := <-errChan
+		if err != nil {
+			os.Remove(TmpFilename)
+			panic(err)
+		}
+	}
+
+	os.Remove(TmpFilename)
+	fmt.Println("Successfully modified all files! Closing...")
 }
 
-func FindAndReplace(path string, legend map[string]string) error {
+func FindAndReplace(path string, legend map[string]string, failChan chan error) {
 	dat, err := os.ReadFile(path)
 	if err != nil {
-		fmt.Println(err)
-		return err
+		failChan <- err
+		return
 	}
 
 	names := string(dat)
@@ -69,13 +86,14 @@ func FindAndReplace(path string, legend map[string]string) error {
 
 	f, err := os.Create(path)
 	if err != nil {
-		return err
+		failChan <- err
+		return
 	}
 	defer f.Close()
 	f.WriteString(names)
 
 	fmt.Printf("finished %s\n", path)
-	return nil
+	failChan <- nil
 }
 
 func downloadFile(filepath string, url string) error {
@@ -95,5 +113,9 @@ func downloadFile(filepath string, url string) error {
 
 	// Write the body to file
 	_, err = io.Copy(out, resp.Body)
-	return err
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
