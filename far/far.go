@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 )
 
 const (
@@ -34,7 +35,6 @@ func main() {
 	s.Split(bufio.ScanLines)
 	for s.Scan() {
 		names := strings.Split(s.Text(), ",")
-
 		// Set all names in comma list to last name (newest)
 		for i, name := range names {
 			if i == len(names)-1 {
@@ -44,39 +44,33 @@ func main() {
 		}
 	}
 
-	errChan := make(chan error)
-	fileCount := 0
+	var wg sync.WaitGroup
 	filepath.Walk(TargetURL, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
+		if err != nil || info.IsDir() {
 			return err
 		}
 
-		if info.IsDir() {
-			return nil
-		}
+		go func() {
+			defer wg.Done()
+			if err := FindAndReplace(path, legend); err != nil {
+				os.Remove(TmpFilename)
+				panic(err)
+			}
+		}()
 
-		fileCount++
-		go FindAndReplace(path, legend, errChan)
 		return nil
 	})
 
-	for i := 0; i < fileCount; i++ {
-		err := <-errChan
-		if err != nil {
-			os.Remove(TmpFilename)
-			panic(err)
-		}
-	}
+	wg.Wait()
 
 	os.Remove(TmpFilename)
 	fmt.Println("Successfully modified all files! Closing...")
 }
 
-func FindAndReplace(path string, legend map[string]string, failChan chan error) {
+func FindAndReplace(path string, legend map[string]string) error {
 	dat, err := os.ReadFile(path)
 	if err != nil {
-		failChan <- err
-		return
+		return err
 	}
 
 	names := string(dat)
@@ -86,14 +80,13 @@ func FindAndReplace(path string, legend map[string]string, failChan chan error) 
 
 	f, err := os.Create(path)
 	if err != nil {
-		failChan <- err
-		return
+		return err
 	}
 	defer f.Close()
 	f.WriteString(names)
 
 	fmt.Printf("finished %s\n", path)
-	failChan <- nil
+	return nil
 }
 
 func downloadFile(filepath string, url string) error {
