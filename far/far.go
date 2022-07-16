@@ -50,6 +50,7 @@ func main() {
 			return err
 		}
 
+		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			if err := FindAndReplace(path, legend); err != nil {
